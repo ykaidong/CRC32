@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)http://www.cnblogs.com/dacainiao/p/5565046.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[转载]CRC32加密算法原理 - 太尼玛菜了 - 博客园</title>
+<link type="text/css" rel="stylesheet" href="./CRC32加密算法原理_files/blog-common.css">
+<link id="MainCss" type="text/css" rel="stylesheet" href="./CRC32加密算法原理_files/bundle-blue.css">
+<link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./CRC32加密算法原理_files/bundle-blue-mobile.css">
+<link title="RSS" type="application/rss+xml" rel="alternate" href="http://www.cnblogs.com/dacainiao/rss">
+<link title="RSD" type="application/rsd+xml" rel="EditURI" href="http://www.cnblogs.com/dacainiao/rsd.xml">
+<link type="application/wlwmanifest+xml" rel="wlwmanifest" href="http://www.cnblogs.com/dacainiao/wlwmanifest.xml">
+<script async="" src="./CRC32加密算法原理_files/analytics.js.下载"></script><script src="./CRC32加密算法原理_files/jquery-2.2.0.min.js.下载"></script>
+<script type="text/javascript">var currentBlogApp = 'dacainiao', cb_enable_mathjax=false;var isLogined=false;</script>
+<script src="./CRC32加密算法原理_files/blog-common.js.下载" type="text/javascript"></script>
+</head>
+<body>
+<a name="top"></a>
+
+<div class="pagelayout">
+    
+
+    
+    <div class="centercolumn">
+        
+<div id="post_detail">
+<div class="singlepost">
+	<div class="posttitle">
+		<a id="cb_post_title_url" class="singleposttitle" href="https://www.cnblogs.com/dacainiao/p/5565046.html">[转载]CRC32加密算法原理</a>
+	</div>
+    <div class="postbody">
+	<div id="cnblogs_post_body" class="blogpost-body"><p>本文转载自:&nbsp;<a href="http://blog.163.com/yucheng_xiao/blog/static/76600192201393092918776/">http://blog.163.com/yucheng_xiao/blog/static/76600192201393092918776/</a></p>
+<p>&nbsp;</p>
+<p>一、基本原理</p>
+<p>&nbsp;&nbsp;&nbsp; CRC检验原理实际上就是在一个p位二进制数据序列之后附加一个r位二进制检验码(序列)，从而构成一个总长为n＝p＋r位的二进制序列；附加在数据序列之后的这个检验码与数据序列的内容之间存在着某种特定的关系。如果因干扰等原因使数据序列中的某一位或某些位发生错误，这种特定关系就会被破坏。因此，通过检查这一关系，就可以实现对数据正确性的检验。</p>
+<p>二、几个基本概念</p>
+<p>1、帧检验序列FCS（Frame Check Sequence）：为了进行差错检验而添加的冗余码。</p>
+<p>2、多项式模2运行：实际上是按位异或(Exclusive OR)运算，即相同为0，相异为1，也就是不考虑进位、借位的二进制加减运算。如：10011011 + 11001010 = 01010001。</p>
+<p>3、生成多项式（generator polynomial）：当进行CRC检验时，发送方与接收方需要事先约定一个除数，即生成多项式，一般记作G（x）。生成多项式的最高位与最低位必须是1。常用的CRC码的生成多项式有：</p>
+<p>CRC8=X8+X5+X4+1</p>
+<p>CRC-CCITT=X16+X12+X5+1</p>
+<p>CRC16=X16+X15+X5+1</p>
+<p>CRC12=X12+X11+X3+X2+1</p>
+<p>CRC32=X32+X26+X23+X22+X16+X12+X11+X10+X8+X7+X5+X4+X2+X1+1</p>
+<p>每一个生成多项式都可以与一个代码相对应，如CRC8对应代码：100110001。</p>
+<p>三、CRC检验码的计算</p>
+<p>设信息字段为K位，校验字段为R位，则码字长度为N(N=K+R)。设双方事先约定了一个R次多项式g(x)，则CRC码：</p>
+<p>V(x)=A(x)g(x)=xRm(x)+r(x)</p>
+<p>其中:&nbsp;&nbsp; m(x)为K次信息多项式， r(x)为R-1次校验多项式。</p>
+<p>这里r(x)对应的代码即为冗余码，加在原信息字段后即形成CRC码。</p>
+<p>r(x)的计算方法为：在K位信息字段的后面添加R个0，再除以g(x)对应的代码序列，得到的余数即为r(x)对应的代码(应为R－1位；若不足，而在高位补0)。</p>
+<p>计算示例</p>
+<p>设需要发送的信息为M = 1010001101，产生多项式对应的代码为P = 110101，R＝5。在M后加5个0，然后对P做模2除法运算，得余数r(x)对应的代码：01110。故实际需要发送的数据是101000110101110。</p>
+<p><img src="./CRC32加密算法原理_files/855014-20160606204850543-1361919192.jpg" alt=""></p>
+<p>图 3.1</p>
+<div>
+<p>四、错误检测</p>
+<p>&nbsp;&nbsp;&nbsp; 当接收方收到数据后，用收到的数据对P（事先约定的）进行模2除法，若余数为0，则认为数据传输无差错；若余数不为0，则认为数据传输出现了错误，由于不知道错误发生在什么地方，因而不能进行自动纠正，一般的做法是丢弃接收的数据。</p>
+<p>五、几点说明：</p>
+<p>1、CRC是一种常用的检错码，并不能用于自动纠错。</p>
+<p>2、只要经过严格的挑选，并使用位数足够多的除数 P，那么出现检测不到的差错的概率就很小很小。</p>
+<p>3、仅用循环冗余检验 CRC 差错检测技术只能做到无差错接受（只是非常近似的认为是无差错的），并不能保证可靠传输。</p>
+<p>&nbsp;</p>
+</div>
+<div>六、数学推理</div>
+<div>虽然以上内容已经有了一个较为清晰的数学计算过程，在这一小节将给出更为严谨的数学模型，以加深印象：</div>
+<div>与第三节内容保持一致</div>
+<div>1.设欲传输的信息有K位,如图6.1所示</div>
+<div>2.首先将欲传输的数据序列m(x)乘以 X<sup>R&nbsp;</sup>, 其中R为g(x)的最高次冥。</div>
+<div><span style="color: #2a2a2a; font-family: Tahoma;">3.将得到的多项式</span>X<sup>R&nbsp;</sup>m(x)除以约定的多项式g(x)</div>
+<div><span style="color: #2a2a2a; font-family: Tahoma;">4.忽略除法结果的“商”，取出其余数，并与</span>X<sup>R</sup>m(x)相加，形成K+R位的发送序列，即：m’(x) =&nbsp;X<sup>R</sup>m(x) +r(x)</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606204929308-1539182955.png" alt=""></div>
+<div>图 6.1</div>
+<div>&nbsp;</div>
+<div>
+<div>CRC编码过程如下：</div>
+<div>设待校验的信息码有k位，即：m = (<span lang="EN-US">m<sub>k-1</sub>、<span lang="EN-US">m<sub>k-2</sub>、<span lang="EN-US">m<sub>k-3</sub>……<span lang="EN-US">m<sub>1</sub>、<span lang="EN-US">m<sub>0</sub>),&nbsp;多项式<span lang="EN-US">m(x)可表示为</span></span></span></span></span></span></div>
+<div><span lang="EN-US">m(x) = m<sub>k-1</sub>x<sup>k-1</sup>+ m<sub>k-2</sub>x<sup>k-2&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">m<sub>1</sub>x<sup>1</sup><span lang="EN-US">+<span lang="EN-US">&nbsp;m<sub>0</sub>x<sup>0 &nbsp;&nbsp;</sup>------------------------------------------------------------------------ 式（1）</span></span></span></span></span></div>
+<div>用多项式g(x)的最高次幂R对应的X<sup>R&nbsp;</sup>乘以m(x)，将得到式（2）</div>
+<div>X<sup>R&nbsp;</sup>m(x) =&nbsp;<span lang="EN-US">m<sub>k-1</sub>x<sup>k+R-1</sup>+ m<sub>k-2</sub>x<sup>k+R-2&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">m<sub>1</sub>x<sup>1+R</sup><span lang="EN-US">+<span lang="EN-US">&nbsp;m<sub>0</sub>x<sup>0+R&nbsp;</sup>-------------------------------------------------------- 式（2）</span></span></span></span></span></div>
+<div>将X<sup>R&nbsp;</sup>m(x) 模2除以g(x)，得到多项式商为A(x),余数为r(x)，即：</div>
+<div><span style="color: #2a2a2a; font-family: Tahoma;">A(x)g(x)&nbsp;</span>=&nbsp;X<sup>R&nbsp;</sup>m(x) +r(x) -----------------------------------------------------------------------------------------------------式（3）</div>
+<div>余数多项式r(x)可表示为</div>
+<div>r(x) =&nbsp;<span lang="EN-US">r<sub>R-1</sub>x<sup>R-1</sup>+ r<sub>R-2</sub>x<sup>R-2&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">r<sub>1</sub>x<sup>1</sup><span lang="EN-US">+<span lang="EN-US">&nbsp;r<sub>0</sub>x<sup>0&nbsp;</sup>------------------------------------------------------------------------------------式（4）</span></span></span></span></span></div>
+<div>将式（2）和式（4）代入式（3）得</div>
+<div>A(x)g(x) =&nbsp;<span lang="EN-US">m<sub>k-1</sub>x<sup>k+R-1</sup>+ m<sub>k-2</sub>x<sup>k+R-2&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">m<sub>1</sub>x<sup>1+R</sup><span lang="EN-US">+<span lang="EN-US">&nbsp;m<sub>0</sub>x<sup>0+R &nbsp;</sup><strong><span style="color: #ff0000;">+</span>&nbsp;</strong><span lang="EN-US">r<sub>R-1</sub>x<sup>R-1</sup>+ r<sub>R-2</sub>x<sup>R-2&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">r<sub>1</sub>x<sup>1</sup><span lang="EN-US">+<span lang="EN-US">&nbsp;r<sub>0</sub>x<sup>0 &nbsp;&nbsp;</sup>--------式（5）</span></span></span></span></span></span></span></span></span></span></div>
+<div>式（5）对应的码组为K+R位，即：</div>
+<div>N = (<span lang="EN-US">m<sub>k-1</sub>+ m<sub>k-2</sub><sup>&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">m<sub>1</sub><span lang="EN-US">+<span lang="EN-US">&nbsp;m<sub>0</sub><sup>&nbsp;&nbsp;</sup><strong><span style="color: #ff0000;">+</span>&nbsp;</strong><span lang="EN-US">r<sub>R-1</sub>+ r<sub>R-2</sub><sup>&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">r<sub>1</sub><span lang="EN-US">+<span lang="EN-US">&nbsp;r<sub>0</sub>)&nbsp;------------------------------------------------------------式（6）&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;</span></span></span></span></span></span></span></span></span></span></div>
+<div>从M到N就是CRC的编码过程<span lang="EN-US">m<sub>k-1</sub>+ m<sub>k-2</sub><sup>&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">m<sub>1</sub><span lang="EN-US">+<span lang="EN-US">&nbsp;m<sub>0</sub><sup>&nbsp;&nbsp;</sup><strong>为k位信息码；</strong><span lang="EN-US">r<sub>R-1</sub>+ r<sub>R-2</sub><sup>&nbsp;</sup><span lang="EN-US">+……<span lang="EN-US">r<sub>1</sub><span lang="EN-US">+<span lang="EN-US">&nbsp;r<sub>0</sub><strong>为R位校验码</strong>。</span></span></span></span></span></span></span></span></span></span></div>
+<div>在信息接收端，将接受到的K+R位码除以相同的多项式g(x),根据式（3）所产生的余数为0，则接受到的数据信息正确无误，否则则认为信息在传输过程中产生的误码。</div>
+<div>根据式（1）~式（6），CRC编码必须进行模2除运算，CRC的校验位就是模2除得到的余数，如果余数用寄存器的存数表示，模2除用异或门表示，那么通用的CRC串行电路就可以同图6.2所示的电路来实现。</div>
+<div>&nbsp;</div>
+<div>
+<div>&nbsp;</div>
+七、LFSR(线性反馈移位寄存器)的深入解析</div>
+<div>在计算过程中，线性反馈移位寄存器是这样一种移位寄存器：它的输入位是之前状态的一个线性函数。如图7.1</div>
+<div>蓝色方框位为输入位，而之前的状态就是0110，显然，按照这个图示，bit0的下一次的状态是bit2,bit3,为自变量的函数值。&nbsp;</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205006715-745563721.png" alt=""></div>
+<div>图 7.1</div>
+<div>&nbsp;</div>
+<div>那么这个函数是可以是什么呢？对于二进制算法无非就是一些门电路了，而最常用的线性函数则是异或门XOR。LFSR的初始化值称之为 seeD（形象点就是火种，比如7.1中的0110）,而且对寄存器的操作也是确定的，那么由这个移位寄存器产生的数据流也同样是由当前的状态确定，另一方面，因为这个移位寄存器的位数是有限且确定的，所以数据流最终必然会进入一个重复的周期循环中</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205027824-1376657344.png" alt=""></div>
+<div>图 &nbsp;7.2</div>
+<div>&nbsp;</div>
+<div>
+<div>说明：</div>
+<div>1.因为函数的唯一性，所以有了箭头的唯一性。</div>
+<div>2.因为4位LFSR的限制，所以，不管数据怎么形成，最终总是难免会重新进入0110的状态。</div>
+<div>&nbsp;</div>
+<div>所以这个循环必然存在，正如如来佛对孙悟空说的，你怎么跑都跑不出我的五指山，当然实际情况并不是只有5个状态。</div>
+<div>问题到这一步又会产生新的一个疑问？到底五指山有几根指头呢？答案是这样的——只要反馈函数选择适当，产生的随机序列将会跑很多的“指头”才能返回到初始状态，也就是说循环周期会很长。具体的例子请参考图7.3</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205058355-617376820.gif" alt=""></div>
+<div>图 7.3</div>
+<div>&nbsp;</div>
+<div>
+<div>A 4-bit Fibonacci LFSR with its state diagram. The&nbsp;<a title="XOR gate" href="http://en.wikipedia.org/wiki/XOR_gate" rel="nofollow">XOR gate</a>&nbsp;provides feedback to the register that shifts bits from left to right. The maximal sequence consists of every possible state except the "0000" state.</div>
+<br>
+<div>CRC（循环冗余校验）与LFSR有很相似的地方，为什么这么说呢？继续分析，先来看一下一种特殊结构的LFRS。</div>
+<div>Galois LFRS (伽罗瓦 线性反馈移位寄存器）</div>
+<div>	什么是伽罗瓦线性反馈移位寄存器呢？只是为了纪念一个数学家，他的名字叫伽罗瓦，知道这点也就够了，最主要的是掌握它的结构特性，它到底有什么特点呢? 对照图7.4所示</div>
+<div>1&gt;模块化；2&gt;异或门插在内部；3&gt;一对多的LFSR</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205157449-867505298.png" alt=""></div>
+<div>图 7.4</div>
+<div>&nbsp;</div>
+<div>
+<div>它是一种轮流的结构，能够产生与传统LFSR相同的输出数据流。在讲述这个结构具体运作功能之前，有几个知识点需要建立。</div>
+<div>1&gt;什么叫抽头（taps）</div>
+<div>&nbsp; &nbsp; &nbsp;在LFSR中影响下一个状态的bit位的位置叫做抽头，在7.1中就是bit2、bit3的位置，在图7.4中为[16. 14. 13. 11]。对应多项式为<span lang="EN-US">X<sup><span lang="EN-US">16&nbsp;</span></sup><span lang="EN-US">+X<sup><span lang="EN-US">14</span></sup><span lang="EN-US">&nbsp;+X<sup><span lang="EN-US">13</span></sup><span lang="EN-US">+X<sup><span lang="EN-US">11</span></sup><span lang="EN-US">+1，在这个多项式中有以下几点值得注意：</span></span></span></span></span></div>
+<div><span lang="EN-US"> <span style="color: #ff0000;">a.多项式最后的1不会对应某一个抽头，它对应输出位（最右边一位，即</span><span lang="EN-US">X<sup><span lang="EN-US">0</span></sup>）</span></span></div>
+<div>b.首位直接相连。</div>
+<div>c.异或门输出到抽头位置，比如14.13.11；其中一个输入为抽头前一个位置，另一个输入对应输出位。</div>
+<div>2&gt;输入位，与输出位</div>
+<div>&nbsp; &nbsp; LFSR中最左边的一位为输入位，而最右边的一位称为输出位。输出位与抽头进行异或运算后，数据整体向右移动一位。</div>
+<div>&nbsp;</div>
+<div><span style="font-size: x-large;"><strong>运算规律总结（这点非常重要）</strong></span></div>
+<div><strong>1.输出为1时，有异或门的位置，数据被翻转向右移向下一位置。没有异或门 &nbsp; &nbsp; &nbsp;的位置，数直接向右移向下一位置。</strong></div>
+<div><strong>2. 输出为0时，</strong><strong>有异或门的位置，数据没有被翻转而是直接向右移向下一位置。 &nbsp; 没有异或门的位置，数直接向右移向下一位置。</strong></div>
+<div><strong>因为输出只能是0或1，所以所有的运算都应该遵循这两条规则，如图7.5所示</strong></div>
+<div><strong><img src="./CRC32加密算法原理_files/855014-20160606205235324-279853611.jpg" alt=""></strong></div>
+<div>&nbsp;</div>
+<div>图 7.5</div>
+<div>&nbsp;</div>
+<div>C语言代码实现：</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205300933-1416962193.png" alt=""></div>
+<div>图 &nbsp;7.6</div>
+<div>&nbsp;</div>
+<div>
+<div>说明：请注意硬件逻辑与C语言逻辑的区别</div>
+<div>C语言实现中是先把LFSR中的数据全部右移动一位，然后判断之前的输出位是否为1</div>
+<div>为1时，把抽头处的数据翻转，若为0则不变。<br>
+<div>这里就有个问题，在硬件电路中是先翻转然后再右移动1位；而在软件语言处理则是先右移1位，然后在相应位置翻转，而实际最终结果是一样的。其实现过程如图7.7所示</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205329480-259179064.jpg" alt=""></div>
+<div>图 7.7</div>
+<div>请对比图7.5与图7.7，分析硬件电路与C语言实现同一种算法的不同过程。</div>
+<div>&nbsp;</div>
+<div>
+<div>CRC模2运算及LFSR电路实现。</div>
+<div>设需要发送的信息为M = 1010001101，产生多项式对应的代码为P = 110101，R＝5。在M后加5个0，然后对P做模2除法运算，得余数r(x)对应的代码：01110。故实际需要发送的数据是101000110101110。</div>
+<div>对应多项式为110101 即&nbsp;<span lang="EN-US">x<sup><span lang="EN-US">5</span></sup><span lang="EN-US">+ x<sup><span lang="EN-US">4</span></sup><span lang="EN-US">+ x<sup><span lang="EN-US">2</span></sup><span lang="EN-US">+1。</span></span></span></span></div>
+<div>模2除运算过程：</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205400215-1977492988.png" alt=""></div>
+<div>图 7.8</div>
+<div>&nbsp;</div>
+<div>
+<div>
+<div>图7.6说明：</div>
+<div>左边的步数（如第6步）表示除数与多项式模2减后的余数。</div>
+<div>右边的步数（如第8步）表示上一步（如第6步）余数的最高位为0时，把余数左移动一位，并相应带入被除数的1位。</div>
+<div><span style="color: #ff6600;">请与图7.7对照分析实际的电路实现过程。</span></div>
+
+
+
+
+
+&nbsp;</div>
+<div>第1步 ———— 第5步：被除数被移入LFSR</div>
+<div>应用LFSR运算规律总结，可得到实际模2运算的一种电路图，具体执行请参考图7.9</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205458496-2129580682.jpg" alt=""></div>
+
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205432902-1160878680.jpg" alt=""></div>
+<div>&nbsp;</div>
+<div><img src="./CRC32加密算法原理_files/855014-20160606205507730-1576732429.jpg" alt=""></div>
+<div>图 7.9</div>
+<div>&nbsp;</div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+</div></div><div id="MySignature"></div>
+<div class="clear"></div>
+
+
+
+    </div>
+	
+</div>
+	<script type="text/javascript">var allowComments=true,cb_blogId=258130,cb_entryId=5565046,cb_blogApp=currentBlogApp,cb_blogUserGuid='15d9145c-039f-e511-9fc1-ac853d9f53cc',cb_entryCreatedDate='2016/6/6 20:55:00';loadViewCount(cb_entryId);var cb_postType=1;</script>
+	
+</div><a name="!comments"></a><script type="text/javascript">var commentManager = new blogCommentManager();commentManager.renderComments(0);</script>
+
+
+
+        <div class="spacer">
+            &nbsp;</div>
+    </div>
+    
+
+</div>
+
+
+
+<audio controls="controls" style="display: none;"></audio></body><style type="text/css">#yddContainer{display:block;font-family:Microsoft YaHei;position:relative;width:100%;height:100%;top:-4px;left:-4px;font-size:12px;border:1px solid}#yddTop{display:block;height:22px}#yddTopBorderlr{display:block;position:static;height:17px;padding:2px 28px;line-height:17px;font-size:12px;color:#5079bb;font-weight:bold;border-style:none solid;border-width:1px}#yddTopBorderlr .ydd-sp{position:absolute;top:2px;height:0;overflow:hidden}.ydd-icon{left:5px;width:17px;padding:0px 0px 0px 0px;padding-top:17px;background-position:-16px -44px}.ydd-close{right:5px;width:16px;padding-top:16px;background-position:left -44px}#yddKeyTitle{float:left;text-decoration:none}#yddMiddle{display:block;margin-bottom:10px}.ydd-tabs{display:block;margin:5px 0;padding:0 5px;height:18px;border-bottom:1px solid}.ydd-tab{display:block;float:left;height:18px;margin:0 5px -1px 0;padding:0 4px;line-height:18px;border:1px solid;border-bottom:none}.ydd-trans-container{display:block;line-height:160%}.ydd-trans-container a{text-decoration:none;}#yddBottom{position:absolute;bottom:0;left:0;width:100%;height:22px;line-height:22px;overflow:hidden;background-position:left -22px}.ydd-padding010{padding:0 10px}#yddWrapper{color:#252525;z-index:10001;background:url(chrome-extension://eopjamdnofihpioajgfdikhhbobonhbb/ab20.png);}#yddContainer{background:#fff;border-color:#4b7598}#yddTopBorderlr{border-color:#f0f8fc}#yddWrapper .ydd-sp{background-image:url(chrome-extension://eopjamdnofihpioajgfdikhhbobonhbb/ydd-sprite.png)}#yddWrapper a,#yddWrapper a:hover,#yddWrapper a:visited{color:#50799b}#yddWrapper .ydd-tabs{color:#959595}.ydd-tabs,.ydd-tab{background:#fff;border-color:#d5e7f3}#yddBottom{color:#363636}#yddWrapper{min-width:250px;max-width:400px;}</style></html>
